@@ -1,0 +1,196 @@
+#!/bin/bash
+#Checks for dependencies(tor, proxychains, macchanger), changes mac address several times, activates proxychains, prompts for connection type & target, wipes tracks
+#Author: P1agues
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YLW='\033[1;33m'
+LBLU='\033[1;34m'
+NC='\033[0m'
+
+clear
+
+HAZH=${LBLU}#${NC}
+
+echo " _________       _____         ___ ___                __    "
+echo "/   _____/____ _/ ____\____   /   |   \_____     ___ |  | __ "
+echo " \_____   \\ __  \\   __\/ __ \/    ~    \__  \ _/ ___\|  |/ / "
+echo " /        \/ __ \|  | \  ___/\    Y    // __ \\  \___ |    < "
+echo "/_______  (____  /__|  \___  >\___|_  /(____  /\___  >__|_ \ "
+echo "        \/     \/          \/       \/      \/     \/     \/ "
+printf "\n"
+echo "Version 1.3a"
+printf "\n"
+sleep 1
+read -p $'\e[36mDo you want to update your system?(y/n):\e[0m ' update
+	if [ $update == "y" ]; then
+		printf "\n"
+		sudo apt-get update
+	fi
+printf "\n"
+echo "----------------------------------"
+echo -ne "${YLW}Checking dependencies...${NC} [$HAZH"
+	for i in $(seq 1 3); do
+   		echo -ne "${LBLU}#${NC}"
+    	sleep 1
+	done
+echo -ne "]"
+sleep 1
+printf "\n"
+echo "----------------------------------" 
+printf "\n"
+	if command -v tor >/dev/null 2>&1 ; then
+    	echo -e "${GREEN}tor found ${NC}"
+   		echo "version: $(tor -v)"
+	else
+    	echo -e "${RED}tor not found ${NC}" 
+		echo "----------------------------------"
+		echo -e "${YLW}Downloading tor...${NC}"
+		echo "----------------------------------"
+		sudo apt install tor -y
+	fi
+sleep 1
+printf "\n"
+	if command -v proxychains >/dev/null 2>&1 ; then
+   		echo -e "${GREEN}proxychains found ${NC}"
+    	echo "version: $(proxychains)"
+	else
+    	echo -e "${RED}proxychains not found ${NC}" 
+		echo "----------------------------------"
+		echo -e "${YLW}Downloading proxychains...${NC}"
+		echo "----------------------------------"
+		rm -rf proxychains-ng
+		#sudo git clone https://github.com/rofl0r/proxychains-ng.git
+		sudo apt-get install proxychains
+	fi
+sudo sed -i 's/strict_chain/#strict_chain/' /etc/proxychains.conf
+sudo sed -i 's/#dynamic chain/dynamic chain/' /etc/proxychains.conf
+sudo sed -i 's/socks4/socks5/' /etc/proxychains.conf
+sleep 1
+printf "\n\n"
+	if command -v macchanger >/dev/null 2>&1 ; then
+    	echo -e "${GREEN}macchanger found ${NC}"
+   		echo "version: $(tor -v)"
+	else
+    	echo -e "${RED}macchanger not found ${NC}" 
+		echo "----------------------------------"
+		echo -e "${YLW}Downloading macchanger...${NC}"
+		echo "----------------------------------"
+		sudo apt-get install macchanger
+	fi
+printf "\n\n"
+sleep 1
+echo "--------------------------------------------------------------------"
+echo -e "${RED}!VIRTUAL MACHINES CANNOT RUN MACCHANGER, PLEASE ANSWER ACCORDINLY!${NC}"
+echo "--------------------------------------------------------------------"
+printf "\n"
+read -p $'\e[36mAre you on a virtual machine?(y/n):\e[0m ' vm
+printf "\n"
+	if [ $vm == "n" ]; then
+		echo "----------------------------------"
+		echo -e "${YLW}Initializing macchanger service...${NC}"
+		echo "----------------------------------"
+		sleep 1
+		printf "["
+			for i in $(seq 1 3); do
+    			echo -ne "${LBLU}#${NC}"
+    			sleep 1
+			done
+		printf "]"
+		printf "\n\n"
+		echo "----------------------------------"
+		read -p $'\e[1;33mEnter network interface\e[0m: '  iface
+		echo "----------------------------------"
+		printf "\n"
+
+		echo "----------------------------------"
+		echo -e "${YLW}Changing mac address...${NC}"
+		echo "----------------------------------"
+		ifconfig $iface down
+		sleep 1
+			for mac_change in $(seq 1 3); do
+				macchanger -r $iface
+				sleep 1
+			done
+	sudo service network-manager restart
+	ifconfig $iface up
+
+	echo "----------------------------------"
+	echo -e "${YLW}Finished macchanger service!${NC}"
+	echo "----------------------------------"
+	macchanger $iface -s
+	sleep 2
+	netstat -i	
+	fi
+sleep 1
+
+echo "----------------------------------"
+echo -e "${YLW}Initializing proxychains service...${NC}"
+echo "----------------------------------"
+sleep 1
+printf "["
+	for i in $(seq 1 3); do
+    	echo -ne "${LBLU}#${NC}"
+   		sleep 1
+	done
+printf "]"
+sleep 1
+printf "\n"
+#gnome-terminal --window-with-profile=Bash -e 'bash -c "tor; read"'
+sleep 1
+printf "\n"
+
+read -p "Protocol (ex: telnet): " protocol
+read -p "Target (ex: targethost.com): " target
+sleep 1
+service tor start
+proxychains $protocol $target > ~/safety/logs/$protocol
+
+printf "\n\n"
+sleep 1
+while true
+	do
+		sleep 1
+		echo -e "${YLW}Your log has been saved under /safety/logs as${NC} $protocol"
+		sleep 3
+		clear
+		read -r -p $'\e[36mConnect to another target?(y/n):\e[0m ' again
+		case $again in
+			[yY])
+		pidof tor | xargs sudo kill -HUP
+		service tor start
+		printf "\n"
+		read -p "Protocol (ex: telnet): " protocol
+		read -p "Target (ex: targethost.com): " target
+		sleep 1
+		proxychains $protocol $target > ~/safety/logs/$protocol
+		;;
+		
+			[nN])
+		break
+		;;
+		esac
+done
+clear
+
+echo "----------------------------------"
+echo -e "${YLW}Covering tracks!${NC}"
+echo "----------------------------------"
+sleep 1
+printf "["
+	for i in $(seq 1 3); do
+    	echo -ne "${LBLU}#${NC}"
+    	sleep 1
+   		echo > /var/log/messages
+		sleep 1
+		echo > /root/.bash_history
+		sleep 1
+  		history -c
+	
+	done
+printf "]"
+sleep 2
+printf "\n\n"
+printf "Done"
+sleep 1
+clear
