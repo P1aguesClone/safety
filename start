@@ -5,21 +5,22 @@
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YLW='\033[1;33m'
-LBLU='\033[1;34m'
+LBLU='\033[0;36m'
 NC='\033[0m'
 
 clear
 
-HAZH=${LBLU}#${NC}
+HAZH=${GREEN}#${NC}
 
-echo " _________       _____         ___ ___                __    "
-echo "/   _____/____ _/ ____\____   /   |   \_____     ___ |  | __ "
-echo " \_____   \\ __  \\   __\/ __ \/    ~    \__  \ _/ ___\|  |/ / "
-echo " /        \/ __ \|  | \  ___/\    Y    // __ \\  \___ |    < "
-echo "/_______  (____  /__|  \___  >\___|_  /(____  /\___  >__|_ \ "
-echo "        \/     \/          \/       \/      \/     \/     \/ "
+echo -e "${GREEN} _________       _____         ___ ___                __    ${NC}"
+echo -e "${GREEN}/   _____/____ _/ ____\____   /   |   \_____     ___ |  | __ ${NC}"
+echo -e "${GREEN} \_____   \\ __  \\   __\/ __ \/    ~    \__  \ _/ ___\|  |/ / ${NC}"
+echo -e "${GREEN} /        \/ __ \|  | \  ___/\    Y    // __ \\  \___ |    < ${NC}"
+echo -e "${GREEN}/_______  (____  /__|  \___  >\___|_  /(____  /\___  >__|_ \ ${NC}"
+echo -e "${GREEN}        \/     \/          \/       \/      \/     \/     \/ ${NC}"
 printf "\n"
-echo "Version 1.3a"
+sudo mkdir -p logs
+echo -e "${YLW}Version 1.3b${NC}"
 printf "\n"
 sleep 1
 read -p $'\e[36mDo you want to update your system?(y/n):\e[0m ' update
@@ -30,8 +31,8 @@ read -p $'\e[36mDo you want to update your system?(y/n):\e[0m ' update
 printf "\n"
 echo "----------------------------------"
 echo -ne "${YLW}Checking dependencies...${NC} [$HAZH"
-	for i in $(seq 1 3); do
-   		echo -ne "${LBLU}#${NC}"
+	for i in $(seq 1 4); do
+   		echo -ne "${GREEN}#${NC}"
     	sleep 1
 	done
 echo -ne "]"
@@ -64,7 +65,7 @@ printf "\n"
 		sudo apt-get install proxychains
 	fi
 sudo sed -i 's/strict_chain/#strict_chain/' /etc/proxychains.conf
-sudo sed -i 's/#dynamic chain/dynamic chain/' /etc/proxychains.conf
+sudo sed -i 's/#dynamic_chain/dynamic_chain/' /etc/proxychains.conf
 sudo sed -i 's/socks4/socks5/' /etc/proxychains.conf
 sleep 1
 printf "\n\n"
@@ -92,8 +93,8 @@ printf "\n"
 		echo "----------------------------------"
 		sleep 1
 		printf "["
-			for i in $(seq 1 3); do
-    			echo -ne "${LBLU}#${NC}"
+			for i in $(seq 1 4); do
+    			echo -ne "${GREEN}#${NC}"
     			sleep 1
 			done
 		printf "]"
@@ -108,7 +109,7 @@ printf "\n"
 		echo "----------------------------------"
 		ifconfig $iface down
 		sleep 1
-			for mac_change in $(seq 1 3); do
+			for mac_change in $(seq 1 4); do
 				macchanger -r $iface
 				sleep 1
 			done
@@ -129,8 +130,8 @@ echo -e "${YLW}Initializing proxychains service...${NC}"
 echo "----------------------------------"
 sleep 1
 printf "["
-	for i in $(seq 1 3); do
-    	echo -ne "${LBLU}#${NC}"
+	for i in $(seq 1 4); do
+    	echo -ne "${GREEN}#${NC}"
    		sleep 1
 	done
 printf "]"
@@ -140,8 +141,8 @@ printf "\n"
 sleep 1
 printf "\n"
 
-read -p "Protocol (ex: telnet): " protocol
-read -p "Target (ex: targethost.com): " target
+read -p $'\e[36mProtocol (ex: telnet):\e[0m ' protocol
+read -p $'\e[36mTarget (ex: targethost.com):\e[0m ' target
 sleep 1
 service tor start
 proxychains $protocol $target > ~/safety/logs/$protocol
@@ -150,19 +151,21 @@ printf "\n\n"
 sleep 1
 while true
 	do
+		clear
 		sleep 1
 		echo -e "${YLW}Your log has been saved under /safety/logs as${NC} $protocol"
 		sleep 3
-		clear
+		printf "\n\n"
 		read -r -p $'\e[36mConnect to another target?(y/n):\e[0m ' again
 		case $again in
 			[yY])
 		pidof tor | xargs sudo kill -HUP
 		service tor start
 		printf "\n"
-		read -p "Protocol (ex: telnet): " protocol
-		read -p "Target (ex: targethost.com): " target
+		read -p $'\e[36mProtocol (ex: telnet):\e[0m ' protocol
+		read -p $'\e[36mTarget (ex: targethost.com):\e[0m ' target
 		sleep 1
+
 		proxychains $protocol $target > ~/safety/logs/$protocol
 		;;
 		
@@ -179,7 +182,7 @@ echo "----------------------------------"
 sleep 1
 printf "["
 	for i in $(seq 1 3); do
-    	echo -ne "${LBLU}#${NC}"
+    	echo -ne "${GREEN}#${NC}"
     	sleep 1
    		echo > /var/log/messages
 		sleep 1
